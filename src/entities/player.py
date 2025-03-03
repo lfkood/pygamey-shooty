@@ -1,10 +1,14 @@
 import pygame
 from pygame.math import Vector2
+import src.entities.bullet
 
 class Player:
-    def __init__(self, position):
+    def __init__(self, position, rotation):
         self.position = Vector2(position)
-        self.speed = 300
+        self.rotation = float(rotation)
+        self.speed = Vector2(0, 0)
+        self.acceleration = Vector2(60, 60)
+        self.max_speed = 300
         self.bullets = pygame.sprite.Group()
         self.last_shot = 0
         self.shoot_delay = 250
@@ -15,23 +19,40 @@ class Player:
         self.invulnerable_duration = 2000  # 2 seconds
         self.shoot_delay = 500  # Increased delay for auto-shooting
         self.score = 0  # Add score tracking
+        self.center = Vector2(0,0)
 
     def handle_movement(self, dt):
         keys = pygame.key.get_pressed()
         if keys[pygame.K_w]:
-            self.position.y = max(self.radius, self.position.y - self.speed * dt)
+            self.speed.y -= self.acceleration.y 
+            # self.position.y = max(self.radius, self.position.y - self.speed.y * dt)
         if keys[pygame.K_s]:
-            self.position.y = min(600 - self.radius, self.position.y + self.speed * dt)
+            self.speed.y += self.acceleration.x 
+            # self.position.y = min(600 - self.radius, self.position.y + self.speed.y * dt)
         if keys[pygame.K_a]:
-            self.position.x = max(self.radius, self.position.x - self.speed * dt)
+            self.speed.x -= self.acceleration.x 
+            # self.position.x = max(self.radius, self.position.x - self.speed.x * dt)
         if keys[pygame.K_d]:
-            self.position.x = min(800 - self.radius, self.position.x + self.speed * dt)
+            self.speed.x += self.acceleration.x 
+            # self.position.x = min(800 - self.radius, self.position.x + self.speed.x * dt)
+        new_pos = self.position + self.speed * dt
+        self.position.x = new_pos.x if self.radius <= new_pos.x <= 800 - self.radius else self.position.x
+        self.position.y = new_pos.y if self.radius <= new_pos.y <= 600 - self.radius else self.position.y
+        self.speed *= 0.75
 
-    def shoot(self, current_time):
-        if current_time - self.last_shot >= self.shoot_delay:
+
+    
+    def handle_rotation(self, position):
+        mouse_pos = Vector2(pygame.mouse.get_pos())
+        direction = mouse_pos - position
+        self.rotation = direction.angle_to(Vector2(1, 0))
+
+    def shoot(self):
+        current_time = pygame.time.get_ticks()
+        if current_time - self.last_shot > self.shoot_delay:
+            bullet = bullet.Bullet(self.position, self.rotation)
+            self.bullets.add(bullet)
             self.last_shot = current_time
-            return True
-        return False
 
     def get_hit(self, current_time):
         if not self.invulnerable:
@@ -39,6 +60,12 @@ class Player:
             self.invulnerable = True
             self.invulnerable_timer = current_time
 
-    def update(self, current_time):
+    def update(self, current_time, screen, player_model):
         if self.invulnerable and current_time - self.invulnerable_timer >= self.invulnerable_duration:
             self.invulnerable = False
+        if not self.invulnerable or pygame.time.get_ticks() % 200 < 100:
+            self.center = player_model.get_rect(topleft = self.position).center
+            self.handle_rotation(self.center)
+            rotated_player = pygame.transform.rotate(player_model, self.rotation - 90)
+            new_rect = rotated_player.get_rect(center = self.center)
+            screen.blit(rotated_player, new_rect)
