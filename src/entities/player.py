@@ -6,7 +6,9 @@ class Player:
     def __init__(self, position, rotation):
         self.position = Vector2(position)
         self.rotation = float(rotation)
-        self.speed = 300
+        self.speed = Vector2(0, 0)
+        self.acceleration = Vector2(60, 60)
+        self.max_speed = 300
         self.bullets = pygame.sprite.Group()
         self.last_shot = 0
         self.shoot_delay = 250
@@ -22,13 +24,22 @@ class Player:
     def handle_movement(self, dt):
         keys = pygame.key.get_pressed()
         if keys[pygame.K_w]:
-            self.position.y = max(self.radius, self.position.y - self.speed * dt)
+            self.speed.y -= self.acceleration.y 
+            # self.position.y = max(self.radius, self.position.y - self.speed.y * dt)
         if keys[pygame.K_s]:
-            self.position.y = min(600 - self.radius, self.position.y + self.speed * dt)
+            self.speed.y += self.acceleration.x 
+            # self.position.y = min(600 - self.radius, self.position.y + self.speed.y * dt)
         if keys[pygame.K_a]:
-            self.position.x = max(self.radius, self.position.x - self.speed * dt)
+            self.speed.x -= self.acceleration.x 
+            # self.position.x = max(self.radius, self.position.x - self.speed.x * dt)
         if keys[pygame.K_d]:
-            self.position.x = min(800 - self.radius, self.position.x + self.speed * dt)
+            self.speed.x += self.acceleration.x 
+            # self.position.x = min(800 - self.radius, self.position.x + self.speed.x * dt)
+        new_pos = self.position + self.speed * dt
+        self.position.x = new_pos.x if self.radius <= new_pos.x <= 800 - self.radius else self.position.x
+        self.position.y = new_pos.y if self.radius <= new_pos.y <= 600 - self.radius else self.position.y
+        self.speed *= 0.75
+
 
     
     def handle_rotation(self, position):
