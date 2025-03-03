@@ -20,11 +20,12 @@ class Game:
         # Load background
         self.background = pygame.image.load("assets/bg.jpg").convert()
         self.background = pygame.transform.scale(self.background, settings.SCREEN_SIZE)
+        self.player_model = pygame.image.load("assets/mc.png").convert_alpha()
 
         self.init_game()
 
     def init_game(self):
-        self.player = Player((settings.SCREEN_SIZE[0] // 2, settings.SCREEN_SIZE[1] - 50))
+        self.player = Player((settings.SCREEN_SIZE[0] // 2, settings.SCREEN_SIZE[1] - 50), 0)
         self.enemies = pygame.sprite.Group()
         self.spawn_timer = 0
         self.spawn_delay = 1000
@@ -62,7 +63,7 @@ class Game:
 
         # Auto-shooting
         if current_time - self.auto_shoot_timer >= self.player.shoot_delay:
-            bullet = Bullet(self.player.position)
+            bullet = Bullet(self.player.center, self.player.rotation)
             self.player.bullets.add(bullet)
             self.auto_shoot_timer = current_time
 
@@ -72,9 +73,9 @@ class Game:
             self.spawn_timer = current_time
 
         self.player.handle_movement(dt)
-        self.player.update(current_time)
-        self.player.bullets.update(dt)
         self.enemies.update(dt)
+
+        self.player.bullets.update(dt)
 
         # Check collisions and update score
         hits = pygame.sprite.groupcollide(self.player.bullets, self.enemies, True, True)
@@ -107,13 +108,13 @@ class Game:
     def draw(self):
         # Draw background
         self.screen.blit(self.background, (0, 0))
-
+        current_time = pygame.time.get_ticks()
         if self.state == settings.MENU:
             self.draw_menu()
         elif self.state == settings.PLAYING:
             # Draw game elements
-            if not self.player.invulnerable or pygame.time.get_ticks() % 200 < 100:
-                pygame.draw.circle(self.screen, settings.WHITE, self.player.position, self.player.radius)
+            #pygame.draw.circle(self.screen, settings.WHITE, self.player.position, self.player.radius)
+            self.player.update(current_time, self.screen, self.player_model)
 
             self.player.bullets.draw(self.screen)
             self.enemies.draw(self.screen)
