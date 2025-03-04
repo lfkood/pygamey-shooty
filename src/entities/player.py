@@ -1,6 +1,7 @@
 import pygame
 from pygame.math import Vector2
-import src.entities.bullet
+from src.entities.bullet import Bullet
+import settings
 
 class Player:
     def __init__(self, position, rotation):
@@ -20,6 +21,13 @@ class Player:
         self.shoot_delay = 500  # Increased delay for auto-shooting
         self.score = 0  # Add score tracking
         self.center = Vector2(0,0)
+        self.upgrades = {
+            "fire_rate": 0,  # Levels of fire rate upgrade
+            "speed": 0,  # Levels of speed upgrade
+            "health": 0  # Levels of health upgrade
+        }
+        self.upgrade_points = 0
+
 
     def handle_movement(self, dt):
         keys = pygame.key.get_pressed()
@@ -50,8 +58,8 @@ class Player:
     def shoot(self):
         current_time = pygame.time.get_ticks()
         if current_time - self.last_shot > self.shoot_delay:
-            bullet = bullet.Bullet(self.position, self.rotation)
-            self.bullets.add(bullet)
+            new_bullet = Bullet(self.position, self.rotation)
+            self.bullets.add(new_bullet)
             self.last_shot = current_time
 
     def get_hit(self, current_time):
@@ -69,3 +77,21 @@ class Player:
             rotated_player = pygame.transform.rotate(player_model, self.rotation - 90)
             new_rect = rotated_player.get_rect(center = self.center)
             screen.blit(rotated_player, new_rect)
+
+    def apply_upgrade(self, upgrade_type):
+        if upgrade_type in self.upgrades and self.upgrades[upgrade_type] < settings.UPGRADES[upgrade_type]["levels"]:
+            cost = settings.UPGRADES[upgrade_type]["cost"]
+            if self.upgrade_points >= cost:
+                self.upgrades[upgrade_type] += 1
+                self.upgrade_points -= cost
+
+                # Apply upgrade effects
+                if upgrade_type == "fire_rate":
+                    self.shoot_delay = max(100, self.shoot_delay - settings.UPGRADES[upgrade_type]["effect"])
+                elif upgrade_type == "speed":
+                    self.max_speed += settings.UPGRADES[upgrade_type]["effect"]
+                elif upgrade_type == "health":
+                    self.lives += settings.UPGRADES[upgrade_type]["effect"]
+
+                return True
+        return False
