@@ -31,18 +31,15 @@ class Player:
 
     def handle_movement(self, dt):
         keys = pygame.key.get_pressed()
-        if keys[pygame.K_w]:
-            self.speed.y -= self.acceleration.y 
-            # self.position.y = max(self.radius, self.position.y - self.speed.y * dt)
-        if keys[pygame.K_s]:
-            self.speed.y += self.acceleration.x 
-            # self.position.y = min(600 - self.radius, self.position.y + self.speed.y * dt)
-        if keys[pygame.K_a]:
-            self.speed.x -= self.acceleration.x 
-            # self.position.x = max(self.radius, self.position.x - self.speed.x * dt)
-        if keys[pygame.K_d]:
-            self.speed.x += self.acceleration.x 
-            # self.position.x = min(800 - self.radius, self.position.x + self.speed.x * dt)
+        if keys[pygame.K_w] or keys[pygame.K_UP]:
+            self.speed.y -= self.acceleration.y
+        if keys[pygame.K_s] or keys[pygame.K_DOWN]:
+            self.speed.y += self.acceleration.y
+        if keys[pygame.K_a] or keys[pygame.K_LEFT]:
+            self.speed.x -= self.acceleration.x
+        if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
+            self.speed.x += self.acceleration.x
+
         new_pos = self.position + self.speed * dt
         self.position.x = new_pos.x if self.radius <= new_pos.x <= 800 - self.radius else self.position.x
         self.position.y = new_pos.y if self.radius <= new_pos.y <= 600 - self.radius else self.position.y

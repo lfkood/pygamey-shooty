@@ -1,5 +1,8 @@
+import platform
 import ctypes
-ctypes.windll.user32.SetProcessDPIAware()
+
+if platform.system() == "Windows":
+    ctypes.windll.user32.SetProcessDPIAware()
 
 # Screen settings
 SCREEN_SIZE = (800, 600)
