@@ -12,3 +12,4 @@ Pygamey Shooty on lihtne 2D tulistamismäng, kus mängija peab hävitama vaenlas
 ## Autorid
 - [fabian](https://github.com/lfkood)
 - Ranno Raud
+- Andreas Rey Hõim
