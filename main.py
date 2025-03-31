@@ -93,7 +93,7 @@ class Game:
 
         # Enemy spawning with difficulty settings
         if current_time - self.spawn_timer >= self.spawn_delay:
-            self.enemies.add(Enemy(settings.SCREEN_SIZE[0], self.difficulty))
+            self.enemies.add(Enemy(settings.SCREEN_SIZE[0], self.player, self.difficulty))
             self.spawn_timer = current_time
 
         self.player.handle_movement(dt)

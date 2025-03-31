@@ -2,9 +2,27 @@ import pygame
 from pygame.math import Vector2
 import random
 import settings
+from src.entities.enemy_ai import *
+
+class EnemyAI:
+    def __init__(self, enemy, player):
+        self.enemy = enemy  # Reference to the enemy object
+        self.player = player  # Reference to the player object
+
+    def update(self, dt):
+        if self.player:
+            # Calculate direction towards player
+            direction = self.player.position - self.enemy.position
+            if direction.length() > 0:
+                direction = direction.normalize()
+
+            # Move enemy towards player
+            self.enemy.position += direction * self.enemy.speed * dt
+            self.enemy.rect.center = self.enemy.position
+
 
 class Enemy(pygame.sprite.Sprite):
-    def __init__(self, screen_width, difficulty=settings.NORMAL):
+    def __init__(self, screen_width, player, difficulty=settings.NORMAL):
         super().__init__()
         self.image = pygame.Surface((30, 30), pygame.SRCALPHA)
         pygame.draw.circle(self.image, settings.RED, (15, 15), 15)
@@ -23,12 +41,14 @@ class Enemy(pygame.sprite.Sprite):
 
         self.rect = self.image.get_rect(center=self.position)
 
-    def update(self, dt):
-        # Move down
-        self.position.y += self.speed * dt
-        self.rect.center = self.position
+        self.player = player  
 
-        # Remove if offscreen
+        self.ai = PredictiveAI(self, player)
+    
+    def update(self, dt):
+        if self.player:
+            self.ai.update(dt)
+
         if self.position.y > 650:
             self.kill()
 
