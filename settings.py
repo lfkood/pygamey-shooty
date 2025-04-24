@@ -18,8 +18,9 @@ PLAYER_SPEED = 300
 BULLET_SPEED = 500
 ENEMY_SPEED = 200
 MENU = 0
-PLAYING = 1
-GAME_OVER = 2
+DIFF_SELECT = 1
+PLAYING = 2
+GAME_OVER = 3
 
 # Difficulty settings
 EASY = 0
@@ -50,8 +51,6 @@ DIFFICULTY_SETTINGS = {
     }
 }
 
-# Level up threshold
-LEVEL_UP_SCORE = 500
 
 # Upgrade costs
 UPGRADES = {

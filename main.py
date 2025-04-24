@@ -1,4 +1,5 @@
 import pygame
+from pygame.math import Vector2
 import sys
 from src.entities.player import Player
 from src.entities.bullet import Bullet
@@ -14,6 +15,7 @@ class Game:
         self.clock = pygame.time.Clock()
         self.running = True
         self.state = settings.MENU
+        self.start_btn_rect = None
         self.font = pygame.font.Font(None, 36)
         self.big_font = pygame.font.Font(None, 74)
 
@@ -40,20 +42,17 @@ class Game:
 
 
     def handle_events(self):
-        for event in pygame.event.get():
+        event_queue = pygame.event.get()
+        for event in event_queue:
             if event.type == pygame.QUIT:
                 self.running = False
-
+            if self.state == settings.MENU: # Because mouse button isnt a KEYDOWN event
+                if pygame.mouse.get_pressed()[0] and self.start_btn_rect.collidepoint(Vector2(pygame.mouse.get_pos())):
+                    self.state = settings.PLAYING
             if event.type == pygame.KEYDOWN:
                 if self.state == settings.MENU:
                     if event.key == pygame.K_SPACE:
                         self.state = settings.PLAYING
-                    elif event.key == pygame.K_1:
-                        self.difficulty = settings.EASY
-                    elif event.key == pygame.K_2:
-                        self.difficulty = settings.NORMAL
-                    elif event.key == pygame.K_3:
-                        self.difficulty = settings.HARD
 
                 elif self.state == settings.PLAYING:
                     if event.key == pygame.K_u:
@@ -124,31 +123,23 @@ class Game:
 
 
     def draw_menu(self):
-        title = self.big_font.render("SPACE FIGHTER", True, settings.WHITE)
-        start_text = self.font.render("Press SPACE to Start", True, settings.WHITE)
-
+        title = pygame.image.load("assets/title.png").convert_alpha()
+        title = pygame.transform.scale(title, Vector2(64,12)*8)
         title_rect = title.get_rect(center=(settings.SCREEN_SIZE[0]//2, settings.SCREEN_SIZE[1]//3))
-        start_rect = start_text.get_rect(center=(settings.SCREEN_SIZE[0]//2, settings.SCREEN_SIZE[1]//2))
-
+        
+        start_btn = pygame.image.load("assets/start-btn.png").convert_alpha()
+        start_btn = pygame.transform.scale(start_btn, Vector2(39,13)*8)
+        start_btn_rect = start_btn.get_rect(center=(settings.SCREEN_SIZE[0]//2, (settings.SCREEN_SIZE[1]//3)*2))
+        self.start_btn_rect = start_btn_rect
+        
+        start_selected_btn = pygame.image.load("assets/start-btn-sel.png").convert_alpha()
+        start_selected_btn = pygame.transform.scale(start_selected_btn, Vector2(39,13)*8)
+            
         self.screen.blit(title, title_rect)
-        self.screen.blit(start_text, start_rect)
-        title = self.big_font.render("SPACE FIGHTER", True, settings.WHITE)
-        start_text = self.font.render("Press SPACE to Start", True, settings.WHITE)
-        diff_text = self.font.render("Select Difficulty: 1-Easy, 2-Normal, 3-Hard", True, settings.WHITE)
-
-        difficulty_name = ["EASY", "NORMAL", "HARD"][self.difficulty]
-        selected_text = self.font.render(f"Current: {difficulty_name}", True, settings.WHITE)
-
-        title_rect = title.get_rect(center=(settings.SCREEN_SIZE[0] // 2, settings.SCREEN_SIZE[1] // 3))
-        start_rect = start_text.get_rect(center=(settings.SCREEN_SIZE[0] // 2, settings.SCREEN_SIZE[1] // 2))
-        diff_rect = diff_text.get_rect(center=(settings.SCREEN_SIZE[0] // 2, settings.SCREEN_SIZE[1] // 2 + 50))
-        selected_rect = selected_text.get_rect(
-            center=(settings.SCREEN_SIZE[0] // 2, settings.SCREEN_SIZE[1] // 2 + 100))
-
-        self.screen.blit(title, title_rect)
-        self.screen.blit(start_text, start_rect)
-        self.screen.blit(diff_text, diff_rect)
-        self.screen.blit(selected_text, selected_rect)
+        if start_btn_rect.collidepoint(Vector2(pygame.mouse.get_pos())):
+            self.screen.blit(start_selected_btn, start_btn_rect)
+        else:
+            self.screen.blit(start_btn, start_btn_rect)
 
     def draw_game_over(self):
         game_over = self.big_font.render("GAME OVER", True, settings.WHITE)
