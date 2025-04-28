@@ -15,10 +15,13 @@ class Game:
         self.clock = pygame.time.Clock()
         self.running = True
         self.state = settings.MENU
-        self.start_btn_rect = None
         self.font = pygame.font.Font(None, 36)
         self.big_font = pygame.font.Font(None, 74)
 
+        self.start_btn_rect = None
+        self.diff_rects = []
+        self.last_press = 0
+        
         # Load background
         self.background = pygame.image.load("assets/bg.jpg").convert()
         self.background = pygame.transform.scale(self.background, settings.SCREEN_SIZE)
@@ -46,9 +49,27 @@ class Game:
         for event in event_queue:
             if event.type == pygame.QUIT:
                 self.running = False
+            
+            # Debounce
+            mouse_pos = Vector2(pygame.mouse.get_pos())
+            debounce = 0.2
+            button_pressed = False
+            if pygame.mouse.get_pressed()[0] and self.last_press + debounce < pygame.time.get_ticks():
+                button_pressed = True
+                self.last_press = pygame.time.get_ticks()
+                        
+            # Menu highlighting
             if self.state == settings.MENU: # Because mouse button isnt a KEYDOWN event
-                if pygame.mouse.get_pressed()[0] and self.start_btn_rect.collidepoint(Vector2(pygame.mouse.get_pos())):
-                    self.state = settings.PLAYING
+                if button_pressed and self.start_btn_rect.collidepoint(mouse_pos):
+                    self.state = settings.DIFF_SELECT
+            
+            if self.state == settings.DIFF_SELECT:
+                if button_pressed:
+                    mouse_rect = pygame.Rect(mouse_pos.x, mouse_pos.y, 1, 1)
+                    self.difficulty = mouse_rect.collidelist(self.diff_rects)
+                    if self.difficulty != -1:
+                        self.state = settings.PLAYING
+            
             if event.type == pygame.KEYDOWN:
                 if self.state == settings.MENU:
                     if event.key == pygame.K_SPACE:
@@ -140,6 +161,40 @@ class Game:
             self.screen.blit(start_selected_btn, start_btn_rect)
         else:
             self.screen.blit(start_btn, start_btn_rect)
+    
+    def draw_diff_sel(self):
+        title = pygame.image.load("assets/diff-title.png").convert_alpha()
+        title = pygame.transform.scale(title, Vector2(34,12)*8)
+        title_rect = title.get_rect(center=(settings.SCREEN_SIZE[0]//2, settings.SCREEN_SIZE[1]//6))
+        
+        difficulty_btns = [
+            [pygame.image.load("assets/diff-easy.png").convert_alpha(), Vector2(28, 10)],
+            [pygame.image.load("assets/diff-medium.png").convert_alpha(), Vector2(41, 10)],
+            [pygame.image.load("assets/diff-hard.png").convert_alpha(), Vector2(31, 10)],
+        ]
+        difficulty_btns = [pygame.transform.scale(x, y*8) for x, y in difficulty_btns]
+        
+        difficulty_selected_btns = [
+            [pygame.image.load("assets/diff-easy-sel.png").convert_alpha(), Vector2(28, 10)],
+            [pygame.image.load("assets/diff-medium-sel.png").convert_alpha(), Vector2(41, 10)],
+            [pygame.image.load("assets/diff-hard-sel.png").convert_alpha(), Vector2(31, 10)],
+        ]
+        difficulty_selected_btns = [pygame.transform.scale(x, y*8) for x, y in difficulty_selected_btns]
+               
+        self.diff_rects = []
+        for i, x in enumerate(difficulty_btns):
+            self.diff_rects.append(x.get_rect(center=(settings.SCREEN_SIZE[0]//2, (settings.SCREEN_SIZE[1]//3) + 50 + 120*i)))
+        
+        mouse_pos = Vector2(pygame.mouse.get_pos())
+        
+        self.screen.blit(title, title_rect)
+        for i, x in enumerate(self.diff_rects):
+            if x.collidepoint(mouse_pos):
+                self.screen.blit(difficulty_selected_btns[i], x)
+            else:
+                print(difficulty_btns)
+                print(self.diff_rects)
+                self.screen.blit(difficulty_btns[i], x)
 
     def draw_game_over(self):
         game_over = self.big_font.render("GAME OVER", True, settings.WHITE)
@@ -226,6 +281,8 @@ class Game:
 
         if self.state == settings.MENU:
             self.draw_menu()
+        elif self.state == settings.DIFF_SELECT:
+            self.draw_diff_sel()
         elif self.state == settings.PLAYING:
             # Draw game elements
             self.player.update(pygame.time.get_ticks(), self.screen, self.player_model)
