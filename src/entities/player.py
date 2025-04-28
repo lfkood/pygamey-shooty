@@ -1,7 +1,8 @@
 import pygame
 from pygame.math import Vector2
-from src.entities.bullet import Bullet
+from src.entities.bullet import Bullet_default
 import settings
+import src.entities.weapons
 
 class Player:
     def __init__(self, position, rotation):
@@ -10,9 +11,12 @@ class Player:
         self.speed = Vector2(0, 0)
         self.acceleration = Vector2(60, 60)
         self.max_speed = 300
+
         self.bullets = pygame.sprite.Group()
+        self.weapon = src.entities.weapons.Weapon_default()
         self.last_shot = 0
         self.shoot_delay = 250
+
         self.lives = 3
         self.radius = 20
         self.invulnerable = False
@@ -22,7 +26,8 @@ class Player:
         self.score = 0  # Add score tracking
         self.center = Vector2(0,0)
         self.upgrades = {
-            "fire_rate": 0,  # Levels of fire rate upgrade
+            "fire_rate": 1,  # Levels of fire rate upgrade
+            "damage": 1,
             "speed": 0,  # Levels of speed upgrade
             "health": 0  # Levels of health upgrade
         }
@@ -53,11 +58,9 @@ class Player:
         self.rotation = direction.angle_to(Vector2(1, 0))
 
     def shoot(self):
-        current_time = pygame.time.get_ticks()
-        if current_time - self.last_shot > self.shoot_delay:
-            new_bullet = Bullet(self.position, self.rotation)
-            self.bullets.add(new_bullet)
-            self.last_shot = current_time
+        bullet = self.weapon.shoot(self.center, self.rotation, self.upgrades["fire_rate"], self.upgrades["damage"])
+        if bullet:
+            self.bullets.add(bullet)
 
     def get_hit(self, current_time):
         if not self.invulnerable:

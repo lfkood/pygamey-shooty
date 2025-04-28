@@ -54,7 +54,8 @@ DIFFICULTY_SETTINGS = {
 
 # Upgrade costs
 UPGRADES = {
-    "fire_rate": {"cost": 100, "levels": 3, "effect": 100},  # ms reduction
-    "speed": {"cost": 150, "levels": 3, "effect": 50},       # speed increase
-    "health": {"cost": 200, "levels": 2, "effect": 1}        # extra life
+    "fire_rate": {"cost": 100, "levels": 4, "effect": 1},
+    "speed": {"cost": 150, "levels": 3, "effect": 50}, 
+    "health": {"cost": 200, "levels": 2, "effect": 1},
+    "damage": {"cost": 150, "levels": 4, "effect": 1}
 }

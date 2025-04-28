@@ -22,7 +22,7 @@ class EnemyAI:
 
 
 class Enemy(pygame.sprite.Sprite):
-    def __init__(self, screen_width, player, difficulty=settings.NORMAL):
+    def __init__(self, screen_width, player, difficulty=settings.NORMAL, health = 1):
         super().__init__()
         self.image = pygame.Surface((30, 30), pygame.SRCALPHA)
         pygame.draw.circle(self.image, settings.RED, (15, 15), 15)
@@ -36,7 +36,7 @@ class Enemy(pygame.sprite.Sprite):
         # Set difficulty-based attributes
         difficulty_settings = settings.DIFFICULTY_SETTINGS[difficulty]
         self.speed = difficulty_settings["enemy_speed"]
-        self.health = difficulty_settings["enemy_health"]
+        self.health = difficulty_settings["enemy_health"] + health
         self.score_value = difficulty_settings["score_multiplier"]
 
         self.rect = self.image.get_rect(center=self.position)

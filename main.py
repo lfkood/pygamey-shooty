@@ -2,7 +2,7 @@ import pygame
 from pygame.math import Vector2
 import sys
 from src.entities.player import Player
-from src.entities.bullet import Bullet
+import src.entities.bullet
 from src.entities.enemy import Enemy
 import settings
 
@@ -64,6 +64,8 @@ class Game:
                             self.player.apply_upgrade("speed")
                         elif event.key == pygame.K_3:
                             self.player.apply_upgrade("health")
+                        elif event.key == pygame.K_4:
+                            self.player.apply_upgrade("damage")
 
                 elif self.state == settings.GAME_OVER:
                     if event.key == pygame.K_SPACE:
@@ -77,22 +79,20 @@ class Game:
         current_time = pygame.time.get_ticks()
 
         # Check for level up
-        if self.score >= self.level * settings.LEVEL_UP_SCORE:
+        if self.score >= settings.LEVEL_UP_SCORE * self.level:
             self.level += 1
             self.spawn_delay = max(200, self.spawn_delay - 100)  # Increase difficulty
             self.player.upgrade_points += 100  # Award upgrade points on level up
             # Auto show upgrade menu on level up
             self.upgrade_menu_active = True
 
-        # Auto-shooting
-        if current_time - self.auto_shoot_timer >= self.player.shoot_delay:
-            bullet = Bullet(self.player.center, self.player.rotation)
-            self.player.bullets.add(bullet)
-            self.auto_shoot_timer = current_time
+        if pygame.mouse.get_pressed()[0]:
+            self.player.shoot()
+
 
         # Enemy spawning with difficulty settings
         if current_time - self.spawn_timer >= self.spawn_delay:
-            self.enemies.add(Enemy(settings.SCREEN_SIZE[0], self.player, self.difficulty))
+            self.enemies.add(Enemy(settings.SCREEN_SIZE[0], self.player, self.difficulty, self.level/2))
             self.spawn_timer = current_time
 
         self.player.handle_movement(dt)
@@ -103,10 +103,10 @@ class Game:
         for bullet in self.player.bullets:
             hits = pygame.sprite.spritecollide(bullet, self.enemies, False)
             if hits:
-                bullet.kill()
+                bullet.delete()
                 for enemy in hits:
-                    if enemy.take_damage():
-                        self.score += enemy.score_value * self.level  # Score based on difficulty and level
+                    if enemy.take_damage(bullet.damage):
+                        self.score += enemy.score_value  # Score based on difficulty and level
                         enemy.kill()
 
         self.check_player_collision()
@@ -165,9 +165,10 @@ class Game:
         points_text = self.font.render(f"Upgrade Points: {self.player.upgrade_points}", True, settings.WHITE)
 
         upgrade_options = [
-            f"1. Fire Rate (Level {self.player.upgrades['fire_rate']}/{settings.UPGRADES['fire_rate']['levels']}) - {settings.UPGRADES['fire_rate']['cost']} pts",
+            f"1. Fire Rate (Level {self.player.upgrades['fire_rate']-1}/{settings.UPGRADES['fire_rate']['levels']-1}) - {settings.UPGRADES['fire_rate']['cost']} pts",
             f"2. Speed (Level {self.player.upgrades['speed']}/{settings.UPGRADES['speed']['levels']}) - {settings.UPGRADES['speed']['cost']} pts",
-            f"3. Health (Level {self.player.upgrades['health']}/{settings.UPGRADES['health']['levels']}) - {settings.UPGRADES['health']['cost']} pts"
+            f"3. Health (Level {self.player.upgrades['health']}/{settings.UPGRADES['health']['levels']}) - {settings.UPGRADES['health']['cost']} pts",
+            f"4. Damage (Level {self.player.upgrades['damage']-1}/{settings.UPGRADES['damage']['levels']-1}) - {settings.UPGRADES['health']['cost']} pts"
         ]
 
         close_text = self.font.render("Press U to close", True, settings.WHITE)
@@ -243,8 +244,6 @@ class Game:
             self.draw_level_progress_bar()
 
             # Upgrade key hint
-            upgrade_hint = self.font.render("Press U for upgrades", True, settings.WHITE)
-            self.screen.blit(upgrade_hint, (settings.SCREEN_SIZE[0] - 200, 10))
 
             # Draw upgrade menu if active
             if self.upgrade_menu_active:
