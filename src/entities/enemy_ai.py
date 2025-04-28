@@ -16,6 +16,17 @@ class BasicAI():
             self.enemy.rect.center = self.enemy.position
 
 
+class Down_AI():
+    def __init__(self, enemy, player):
+        self.enemy = enemy
+        self.player = player
+    def update(self, dt):
+        if self.player:
+            self.enemy.position += Vector2(0, 1) * self.enemy.speed * dt
+            self.enemy.rect.center = self.enemy.position
+
+
+
 class PredictiveAI():
     """AI that predicts where the player is going and moves to that spot."""
     def __init__(self, enemy, player):

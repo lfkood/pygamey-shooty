@@ -34,7 +34,7 @@ DIFFICULTY_SETTINGS = {
     EASY: {
         "spawn_delay": 1500,
         "enemy_speed": 150,
-        "enemy_health": 1,
+        "enemy_health": 0.5,
         "score_multiplier": 2  # Increased from 1
     },
     NORMAL: {

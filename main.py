@@ -3,7 +3,7 @@ from pygame.math import Vector2
 import sys
 from src.entities.player import Player
 import src.entities.bullet
-from src.entities.enemy import Enemy
+import src.entities.enemy
 import settings
 
 class Game:
@@ -38,7 +38,11 @@ class Game:
         self.player = Player((settings.SCREEN_SIZE[0] // 2, settings.SCREEN_SIZE[1] - 50), 0)
         self.enemies = pygame.sprite.Group()
         self.spawn_timer = 0
+        self.spawn_timer_2 = 0
+
         self.spawn_delay = 1000
+        self.spawn_delay_2 = 3000
+
         self.score = 0
         self.auto_shoot_timer = 0
         self.player.upgrade_points = 100
@@ -103,6 +107,8 @@ class Game:
         if self.score >= settings.LEVEL_UP_SCORE * self.level:
             self.level += 1
             self.spawn_delay = max(200, self.spawn_delay - 100)  # Increase difficulty
+            self.spawn_delay_2 = max(200, self.spawn_delay_2 - 100)
+
             self.player.upgrade_points += 100  # Award upgrade points on level up
             # Auto show upgrade menu on level up
             self.upgrade_menu_active = True
@@ -113,8 +119,11 @@ class Game:
 
         # Enemy spawning with difficulty settings
         if current_time - self.spawn_timer >= self.spawn_delay:
-            self.enemies.add(Enemy(settings.SCREEN_SIZE[0], self.player, self.difficulty, self.level/2))
+            self.enemies.add(src.entities.enemy.Enemy_1(settings.SCREEN_SIZE[0], self.player, self.difficulty, self.level/2))
             self.spawn_timer = current_time
+        if current_time - self.spawn_timer_2 >= self.spawn_delay_2 and self.level > 3:
+            self.enemies.add(src.entities.enemy.Enemy_2(settings.SCREEN_SIZE[0], self.player, self.difficulty, self.level/2))
+            self.spawn_timer_2 = current_time
 
         self.player.handle_movement(dt)
         self.enemies.update(dt)

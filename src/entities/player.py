@@ -1,6 +1,5 @@
 import pygame
 from pygame.math import Vector2
-from src.entities.bullet import Bullet_default
 import settings
 import src.entities.weapons
 
