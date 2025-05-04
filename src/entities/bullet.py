@@ -74,7 +74,7 @@ class Laser(pygame.sprite.Sprite):
             damage_mult (float): Multiplier for the laser's base damage.
         """
         super().__init__()
-        self.damage = 0.1 * damage_mult
+        self.damage = 0.02 * damage_mult
 
         self.rotation = float(rotation)
         self.lifetime = 100

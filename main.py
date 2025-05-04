@@ -11,6 +11,8 @@ from src.entities.player import Player
 import src.entities.bullet
 import src.entities.enemy
 import settings
+import src.utils.upgrades as upgrades
+
 
 class Game:
     """
@@ -67,7 +69,8 @@ class Game:
 
         self.score = 0
         self.auto_shoot_timer = 0
-        self.player.upgrade_points = 100
+        self.player.upgrade_points = 0
+        self.has_upgrade_available = False
 
 
     def handle_events(self):
@@ -106,18 +109,12 @@ class Game:
                     if event.key == pygame.K_SPACE:
                         self.state = settings.PLAYING
 
+
                 elif self.state == settings.PLAYING:
                     if event.key == pygame.K_u:
                         self.upgrade_menu_active = not self.upgrade_menu_active
-                    if self.upgrade_menu_active:
-                        if event.key == pygame.K_1:
-                            self.player.apply_upgrade("fire_rate")
-                        elif event.key == pygame.K_2:
-                            self.player.apply_upgrade("speed")
-                        elif event.key == pygame.K_3:
-                            self.player.apply_upgrade("health")
-                        elif event.key == pygame.K_4:
-                            self.player.apply_upgrade("damage")
+
+
 
                 elif self.state == settings.GAME_OVER:
                     if event.key == pygame.K_SPACE:
@@ -142,11 +139,10 @@ class Game:
         # Check for level up
         if self.score >= settings.LEVEL_UP_SCORE * self.level:
             self.level += 1
-            self.spawn_delay = max(200, self.spawn_delay - 100)  # Increase difficulty
+            self.spawn_delay = max(200, self.spawn_delay - 100)
             self.spawn_delay_2 = max(200, self.spawn_delay_2 - 100)
-
-            self.player.upgrade_points += 100  # Award upgrade points on level up
-            # Auto show upgrade menu on level up
+            
+            self.has_upgrade_available = True
             self.upgrade_menu_active = True
 
         if pygame.mouse.get_pressed()[0]:
@@ -277,46 +273,6 @@ class Game:
         self.screen.blit(score_text, score_rect)
         self.screen.blit(restart_text, restart_rect)
 
-    def draw_upgrade_menu(self):
-        """
-        Draw the upgrade menu overlay.
-        
-        Shows available upgrades, their costs, current levels, and player's upgrade points.
-        """
-        # Draw semi-transparent overlay
-        overlay = pygame.Surface(settings.SCREEN_SIZE, pygame.SRCALPHA)
-        overlay.fill((0, 0, 0, 180))
-        self.screen.blit(overlay, (0, 0))
-
-        # Draw upgrade options
-        title = self.big_font.render("UPGRADES", True, settings.WHITE)
-        points_text = self.font.render(f"Upgrade Points: {self.player.upgrade_points}", True, settings.WHITE)
-
-        upgrade_options = [
-            f"1. Fire Rate (Level {self.player.upgrades['fire_rate']-1}/{settings.UPGRADES['fire_rate']['levels']-1}) - {settings.UPGRADES['fire_rate']['cost']} pts",
-            f"2. Speed (Level {self.player.upgrades['speed']}/{settings.UPGRADES['speed']['levels']}) - {settings.UPGRADES['speed']['cost']} pts",
-            f"3. Health (Level {self.player.upgrades['health']}/{settings.UPGRADES['health']['levels']}) - {settings.UPGRADES['health']['cost']} pts",
-            f"4. Damage (Level {self.player.upgrades['damage']-1}/{settings.UPGRADES['damage']['levels']-1}) - {settings.UPGRADES['health']['cost']} pts"
-        ]
-
-        close_text = self.font.render("Press U to close", True, settings.WHITE)
-
-        title_rect = title.get_rect(center=(settings.SCREEN_SIZE[0] // 2, 100))
-        points_rect = points_text.get_rect(center=(settings.SCREEN_SIZE[0] // 2, 160))
-
-        self.screen.blit(title, title_rect)
-        self.screen.blit(points_text, points_rect)
-
-        y_pos = 220
-        for option in upgrade_options:
-            option_text = self.font.render(option, True, settings.WHITE)
-            option_rect = option_text.get_rect(center=(settings.SCREEN_SIZE[0] // 2, y_pos))
-            self.screen.blit(option_text, option_rect)
-            y_pos += 50
-
-        close_rect = close_text.get_rect(center=(settings.SCREEN_SIZE[0] // 2, y_pos + 30))
-        self.screen.blit(close_text, close_rect)
-
     def draw_level_progress_bar(self):
         """
         Draw a progress bar showing progress toward the next level.
@@ -394,7 +350,8 @@ class Game:
 
             # Draw upgrade menu if active
             if self.upgrade_menu_active:
-                self.draw_upgrade_menu()
+                if upgrades.draw_upgrade_menu(self.screen, self.player):
+                    self.upgrade_menu_active = False
         elif self.state == settings.GAME_OVER:
             self.draw_game_over()
 
