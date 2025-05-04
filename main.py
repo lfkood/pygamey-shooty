@@ -164,6 +164,9 @@ class Game:
         self.player.handle_movement(dt)
         self.enemies.update(dt)
         self.player.bullets.update(dt)
+        
+        # Update damage indicators
+        src.entities.enemy.Enemy_1.damage_indicators.update(dt)
 
         # Check bullet-enemy collisions with health system
         for bullet in self.player.bullets:
@@ -368,6 +371,13 @@ class Game:
             self.player.update(pygame.time.get_ticks(), self.screen, self.player_model)
             self.player.bullets.draw(self.screen)
             self.enemies.draw(self.screen)
+            
+            # Draw health bars for all enemies
+            for enemy in self.enemies:
+                enemy.draw_health_bar(self.screen)
+            
+            # Draw damage indicators
+            src.entities.enemy.Enemy_1.damage_indicators.draw(self.screen)
 
             # Draw lives, score, level
             lives_text = self.font.render(f'Lives: {self.player.lives}', True, settings.WHITE)
