@@ -1,3 +1,9 @@
+"""
+Enemy module for Space Fighter game.
+
+This module defines different enemy types that appear in the game with
+different behaviors, health values, and scoring characteristics.
+"""
 import pygame
 from pygame.math import Vector2
 import random
@@ -7,7 +13,21 @@ from src.entities.enemy_ai import *
 
 
 class Enemy_1(pygame.sprite.Sprite):
+    """
+    Basic enemy class with simple movement pattern.
+    
+    A small circular enemy that follows the player using basic AI.
+    """
     def __init__(self, screen_width, player, difficulty=settings.NORMAL, health = 1):
+        """
+        Initialize a basic enemy.
+        
+        Args:
+            screen_width (int): Width of the game screen.
+            player (Player): Reference to the player object.
+            difficulty (int): Difficulty setting (EASY, NORMAL, HARD) affecting enemy stats.
+            health (float): Base health modifier for the enemy.
+        """
         super().__init__()
         self.image = pygame.Surface((30, 30), pygame.SRCALPHA)
         pygame.draw.circle(self.image, settings.RED, (15, 15), 15)
@@ -31,6 +51,12 @@ class Enemy_1(pygame.sprite.Sprite):
         self.ai = BasicAI(self, player)
     
     def update(self, dt):
+        """
+        Update enemy position and behavior.
+        
+        Args:
+            dt (float): Delta time in seconds since the last frame.
+        """
         if self.player:
             self.ai.update(dt)
 
@@ -38,6 +64,15 @@ class Enemy_1(pygame.sprite.Sprite):
             self.kill()
 
     def take_damage(self, damage=1):
+        """
+        Reduce enemy health when hit by player projectiles.
+        
+        Args:
+            damage (float): Amount of damage to apply to the enemy.
+            
+        Returns:
+            bool: True if the enemy's health reaches zero or below, False otherwise.
+        """
         self.health -= damage
         return self.health <= 0
 
@@ -45,7 +80,22 @@ class Enemy_1(pygame.sprite.Sprite):
 
 
 class Enemy_2(pygame.sprite.Sprite):
+    """
+    Advanced enemy class with more health and different movement behavior.
+    
+    A larger rectangular enemy that moves straight down, has more health,
+    and provides more score points.
+    """
     def __init__(self, screen_width, player, difficulty=settings.NORMAL, health = 1):
+        """
+        Initialize an advanced enemy.
+        
+        Args:
+            screen_width (int): Width of the game screen.
+            player (Player): Reference to the player object.
+            difficulty (int): Difficulty setting (EASY, NORMAL, HARD) affecting enemy stats.
+            health (float): Base health modifier for the enemy.
+        """
         super().__init__()
         self.image = pygame.Surface((60, 60), pygame.SRCALPHA)
         pygame.draw.rect(self.image, (0, 0, 255), (30, 30, 50, 20))
@@ -69,6 +119,12 @@ class Enemy_2(pygame.sprite.Sprite):
         self.ai = Down_AI(self, player)
     
     def update(self, dt):
+        """
+        Update enemy position and behavior.
+        
+        Args:
+            dt (float): Delta time in seconds since the last frame.
+        """
         if self.player:
             self.ai.update(dt)
 
@@ -76,5 +132,14 @@ class Enemy_2(pygame.sprite.Sprite):
             self.kill()
 
     def take_damage(self, damage=1):
+        """
+        Reduce enemy health when hit by player projectiles.
+        
+        Args:
+            damage (float): Amount of damage to apply to the enemy.
+            
+        Returns:
+            bool: True if the enemy's health reaches zero or below, False otherwise.
+        """
         self.health -= damage
         return self.health <= 0

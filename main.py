@@ -1,3 +1,9 @@
+"""
+Main game module for Space Fighter game.
+
+This module contains the main Game class which controls the game loop,
+handles events, updates game state, and renders all game elements.
+"""
 import pygame
 from pygame.math import Vector2
 import sys
@@ -7,7 +13,18 @@ import src.entities.enemy
 import settings
 
 class Game:
+    """
+    Main game class that controls the game loop and all game elements.
+    
+    This class initializes the game, handles user input, updates game state,
+    and renders all game elements to the screen.
+    """
     def __init__(self):
+        """
+        Initialize the game with default settings.
+        
+        Sets up pygame, loads assets, and initializes game state variables.
+        """
         pygame.init()
         pygame.mixer.init()
         self.screen = pygame.display.set_mode(settings.SCREEN_SIZE)
@@ -35,6 +52,11 @@ class Game:
         self.init_game()
 
     def init_game(self):
+        """
+        Initialize or reset the game state for a new game.
+        
+        Creates player and enemy groups, resets timers, score, and other game variables.
+        """
         self.player = Player((settings.SCREEN_SIZE[0] // 2, settings.SCREEN_SIZE[1] - 50), 0)
         self.enemies = pygame.sprite.Group()
         self.spawn_timer = 0
@@ -49,6 +71,11 @@ class Game:
 
 
     def handle_events(self):
+        """
+        Process all game events and user input.
+        
+        Handles mouse clicks, keyboard input, and pygame events based on current game state.
+        """
         event_queue = pygame.event.get()
         for event in event_queue:
             if event.type == pygame.QUIT:
@@ -98,6 +125,15 @@ class Game:
                         self.state = settings.PLAYING
 
     def update(self, dt):
+        """
+        Update game state for the current frame.
+        
+        Args:
+            dt (float): Delta time in seconds since the last frame.
+        
+        Updates player, enemies, bullets, checks for collisions, handles level progression,
+        and updates game state.
+        """
         if self.state != settings.PLAYING or self.upgrade_menu_active:
             return
 
@@ -142,6 +178,11 @@ class Game:
         self.check_player_collision()
 
     def check_player_collision(self):
+        """
+        Check for collisions between the player and enemies.
+        
+        Reduces player lives on collision and updates game state if player runs out of lives.
+        """
         current_time = pygame.time.get_ticks()
         for enemy in self.enemies:
             distance = self.player.position.distance_to(enemy.position)
@@ -153,6 +194,11 @@ class Game:
 
 
     def draw_menu(self):
+        """
+        Draw the main menu screen.
+        
+        Displays title and start button with hover effects.
+        """
         title = pygame.image.load("assets/title.png").convert_alpha()
         title = pygame.transform.scale(title, Vector2(64,12)*8)
         title_rect = title.get_rect(center=(settings.SCREEN_SIZE[0]//2, settings.SCREEN_SIZE[1]//3))
@@ -172,6 +218,11 @@ class Game:
             self.screen.blit(start_btn, start_btn_rect)
     
     def draw_diff_sel(self):
+        """
+        Draw the difficulty selection screen.
+        
+        Displays difficulty options (Easy, Medium, Hard) with hover effects.
+        """
         title = pygame.image.load("assets/diff-title.png").convert_alpha()
         title = pygame.transform.scale(title, Vector2(34,12)*8)
         title_rect = title.get_rect(center=(settings.SCREEN_SIZE[0]//2, settings.SCREEN_SIZE[1]//6))
@@ -206,6 +257,11 @@ class Game:
                 self.screen.blit(difficulty_btns[i], x)
 
     def draw_game_over(self):
+        """
+        Draw the game over screen.
+        
+        Displays final score and restart instructions.
+        """
         game_over = self.big_font.render("GAME OVER", True, settings.WHITE)
         score_text = self.big_font.render(f"Score: {self.score}", True, settings.WHITE)
         restart_text = self.font.render("Press SPACE to Restart", True, settings.WHITE)
@@ -219,6 +275,11 @@ class Game:
         self.screen.blit(restart_text, restart_rect)
 
     def draw_upgrade_menu(self):
+        """
+        Draw the upgrade menu overlay.
+        
+        Shows available upgrades, their costs, current levels, and player's upgrade points.
+        """
         # Draw semi-transparent overlay
         overlay = pygame.Surface(settings.SCREEN_SIZE, pygame.SRCALPHA)
         overlay.fill((0, 0, 0, 180))
@@ -254,6 +315,11 @@ class Game:
         self.screen.blit(close_text, close_rect)
 
     def draw_level_progress_bar(self):
+        """
+        Draw a progress bar showing progress toward the next level.
+        
+        Visualizes current score progress as a percentage toward leveling up.
+        """
         # Calculate progress percentage
         next_level_threshold = self.level * settings.LEVEL_UP_SCORE
         previous_level_threshold = (self.level - 1) * settings.LEVEL_UP_SCORE
@@ -285,6 +351,11 @@ class Game:
         self.screen.blit(progress_text, text_rect)
 
     def draw(self):
+        """
+        Render all game elements to the screen based on current game state.
+        
+        Handles rendering for different game states (menu, playing, game over).
+        """
         # Draw background
         self.screen.blit(self.background, (0, 0))
 
@@ -320,6 +391,11 @@ class Game:
         pygame.display.flip()
 
     def run(self):
+        """
+        Start the main game loop.
+        
+        Controls the game timing, updates, rendering, and handles exit conditions.
+        """
         while self.running:
             dt = self.clock.tick(settings.FPS) / 1000
             self.handle_events()

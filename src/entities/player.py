@@ -1,10 +1,27 @@
+"""
+Player module for Space Fighter game.
+
+This module defines the Player class that represents the player-controlled character in the game.
+"""
 import pygame
 from pygame.math import Vector2
 import settings
 import src.entities.weapons
 
 class Player:
+    """
+    Player class representing the player-controlled character.
+    
+    Handles player movement, shooting, health, upgrades, and collision detection.
+    """
     def __init__(self, position, rotation):
+        """
+        Initialize the player object.
+        
+        Args:
+            position (tuple): Initial position (x, y) of the player.
+            rotation (float): Initial rotation angle in degrees.
+        """
         self.position = Vector2(position)
         self.rotation = float(rotation)
         self.speed = Vector2(0, 0)
@@ -34,6 +51,12 @@ class Player:
 
 
     def handle_movement(self, dt):
+        """
+        Handle player movement based on keyboard input.
+        
+        Args:
+            dt (float): Delta time in seconds since the last frame.
+        """
         keys = pygame.key.get_pressed()
         if keys[pygame.K_w] or keys[pygame.K_UP]:
             self.speed.y -= self.acceleration.y
@@ -52,22 +75,48 @@ class Player:
 
     
     def handle_rotation(self, position):
+        """
+        Handle player rotation based on mouse position.
+        
+        Args:
+            position (Vector2): Current player position.
+        """
         mouse_pos = Vector2(pygame.mouse.get_pos())
         direction = mouse_pos - position
         self.rotation = direction.angle_to(Vector2(1, 0))
 
     def shoot(self):
+        """
+        Create a new bullet when the player shoots.
+        
+        Returns:
+            bool: True if a bullet was fired, False otherwise.
+        """
         bullet = self.weapon.shoot(self.center, self.rotation, self.upgrades["fire_rate"], self.upgrades["damage"])
         if bullet:
             self.bullets.add(bullet)
 
     def get_hit(self, current_time):
+        """
+        Handle player being hit by an enemy.
+        
+        Args:
+            current_time (int): Current game time in milliseconds.
+        """
         if not self.invulnerable:
             self.lives -= 1
             self.invulnerable = True
             self.invulnerable_timer = current_time
 
     def update(self, current_time, screen, player_model):
+        """
+        Update player's state and render the player on the screen.
+        
+        Args:
+            current_time (int): Current game time in milliseconds.
+            screen (pygame.Surface): Game screen to render the player on.
+            player_model (pygame.Surface): Player sprite image.
+        """
         if self.invulnerable and current_time - self.invulnerable_timer >= self.invulnerable_duration:
             self.invulnerable = False
         if not self.invulnerable or pygame.time.get_ticks() % 200 < 100:
@@ -78,6 +127,15 @@ class Player:
             screen.blit(rotated_player, new_rect)
 
     def apply_upgrade(self, upgrade_type):
+        """
+        Apply an upgrade to the player based on the specified type.
+        
+        Args:
+            upgrade_type (str): The type of upgrade to apply ('fire_rate', 'speed', 'health', 'damage').
+            
+        Returns:
+            bool: True if the upgrade was applied successfully, False otherwise.
+        """
         if upgrade_type in self.upgrades and self.upgrades[upgrade_type] < settings.UPGRADES[upgrade_type]["levels"]:
             cost = settings.UPGRADES[upgrade_type]["cost"]
             if self.upgrade_points >= cost:

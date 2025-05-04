@@ -1,3 +1,9 @@
+"""
+Settings module for Space Fighter game.
+
+This module contains all global settings and constants used throughout the game,
+including screen dimensions, colors, game states, difficulty settings, and upgrade parameters.
+"""
 import platform
 import ctypes
 
