@@ -144,6 +144,8 @@ def apply_upgrade(self, upgrade_type):
             self.weapon = src.entities.weapons.Weapon_laser()
         elif weapon_type == "sniper":
             self.weapon = src.entities.weapons.Weapon_sniper()
+        elif weapon_type == "shotgun":
+            self.weapon = src.entities.weapons.Weapon_shotgun()
         return True
     
     # Handle regular upgrades (check levels)

@@ -168,7 +168,7 @@ class Game:
         for bullet in self.player.bullets:
             hits = pygame.sprite.spritecollide(bullet, self.enemies, False)
             if hits:
-                bullet.delete()
+                bullet.enemies_left_to_pierce -= 1
                 for enemy in hits:
                     if enemy.take_damage(bullet.damage):
                         self.score += enemy.score_value  # Score based on difficulty and level
