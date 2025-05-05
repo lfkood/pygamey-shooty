@@ -149,10 +149,6 @@ class Enemy_1(pygame.sprite.Sprite):
         # Health percentage
         health_ratio = max(0, self.health / self.max_health)
         
-        # Draw background/border
-        pygame.draw.rect(screen, settings.BLACK, 
-                        (bar_position[0], bar_position[1], bar_width, bar_height))
-        
         # Draw actual health (only if enemy has been damaged)
         if health_ratio < 1.0:
             current_width = int(bar_width * health_ratio)
@@ -247,10 +243,6 @@ class Enemy_2(pygame.sprite.Sprite):
         
         # Health percentage
         health_ratio = max(0, self.health / self.max_health)
-        
-        # Draw background/border
-        pygame.draw.rect(screen, settings.BLACK, 
-                        (bar_position[0], bar_position[1], bar_width, bar_height))
         
         # Draw actual health
         if health_ratio < 1.0:

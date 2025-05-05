@@ -1,6 +1,7 @@
 import pygame
 import random
 import settings
+from pygame.math import Vector2
 
 upgrade_cache = []
 
@@ -33,42 +34,36 @@ def draw_upgrade_menu(screen, player):
     overlay = pygame.Surface(settings.SCREEN_SIZE, pygame.SRCALPHA)
     overlay.fill((0, 0, 0, 180))
     screen.blit(overlay, (0, 0))
+    
+    bg = pygame.image.load("assets/upgrade-bg.png").convert_alpha()
+    bg = pygame.transform.scale(bg, settings.SCREEN_SIZE)
+    screen.blit(bg, (0, 0))
 
     font = pygame.font.Font(None, 36)
-    big_font = pygame.font.Font(None, 74)
     small_font = pygame.font.Font(None, 24)
-
-    title = big_font.render("LEVEL UP!", True, settings.WHITE)
-    subtitle = font.render("Choose an upgrade:", True, settings.WHITE)
-
-    title_rect = title.get_rect(center=(settings.SCREEN_SIZE[0] // 2, 80))
-    subtitle_rect = subtitle.get_rect(center=(settings.SCREEN_SIZE[0] // 2, 140))
-
-    screen.blit(title, title_rect)
-    screen.blit(subtitle, subtitle_rect)
-
+    
     all_upgrade_types = ["fire_rate", "speed", "health", "damage"]
     if not upgrade_cache:
         upgrade_cache = random.sample(all_upgrade_types, 3)
 
     icons = {
-        "fire_rate": pygame.image.load("assets/fire_rate.png"),
-        "speed": pygame.image.load("assets/speed.png"),
-        "health": pygame.image.load("assets/health.png"),
-        "damage": pygame.image.load("assets/damage.png")
+        "fire_rate": pygame.image.load("assets/upgrade-rate.png"),
+        "speed": pygame.image.load("assets/upgrade-speed.png"),
+        "health": pygame.image.load("assets/upgrade-health.png"),
+        "damage": pygame.image.load("assets/upgrade-dmg.png"),
     }
 
     descriptions = {
         "fire_rate": "+50% fire rate",
         "speed": "+50% speed",
         "health": "+1 life",
-        "damage": "+50% bullet damage"
+        "damage": "+50% bullet damage",
     }
 
     box_size = 100
     padding = 40
     start_x = (settings.SCREEN_SIZE[0] - (len(upgrade_cache) * (box_size + padding) - padding)) // 2
-    y = 200
+    y = 300
 
     mouse_pos = pygame.mouse.get_pos()
     mouse_clicked = pygame.mouse.get_pressed()[0]
@@ -77,11 +72,14 @@ def draw_upgrade_menu(screen, player):
         x = start_x + idx * (box_size + padding)
         rect = pygame.Rect(x, y, box_size, box_size)
 
-        hovered = rect.collidepoint(mouse_pos)
-        pygame.draw.rect(screen, (200, 200, 200) if hovered else settings.WHITE, rect, 2)
-
         icon = pygame.transform.scale(icons[upgrade_type], (box_size - 20, box_size - 20))
         screen.blit(icon, (x + 10, y + 10))
+
+        hovered = rect.collidepoint(mouse_pos)
+        if rect.collidepoint(mouse_pos):
+            selection_overlay = pygame.image.load("assets/upgrade-sel.png")
+            selection_overlay = pygame.transform.scale(selection_overlay, (box_size - 20, box_size - 20))
+            screen.blit(selection_overlay, (x + 10, y + 10))
 
         level = player.upgrades.get(upgrade_type, 0)
         max_level = settings.UPGRADES[upgrade_type]["levels"]
