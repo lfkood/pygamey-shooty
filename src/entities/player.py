@@ -29,7 +29,7 @@ class Player:
         self.acceleration = Vector2(self.base_acceleration, self.base_acceleration)
 
         self.bullets = pygame.sprite.Group()
-        self.weapon = src.entities.weapons.Weapon_sniper()
+        self.weapon = src.entities.weapons.Weapon_laser()
         self.last_shot = 0
         self.shoot_delay = 250
 

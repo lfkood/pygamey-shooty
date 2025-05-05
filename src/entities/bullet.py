@@ -1,40 +1,18 @@
-"""
-Bullet module for Space Fighter game.
-
-This module defines different types of bullets/projectiles that can be fired by the player.
-"""
 import pygame
 from pygame.math import Vector2
 
-class Bullet_default(pygame.sprite.Sprite):
+class BaseBullet(pygame.sprite.Sprite):
     """
-    Default bullet class for the player's standard weapon.
-    
-    A simple projectile with moderate damage and speed.
+    Abstract base class for all bullet types.
     """
-    def __init__(self, position, rotation, damage_mult):
-        """
-        Initialize a default bullet object.
-        
-        Args:
-            position (tuple): Initial position (x, y) of the bullet.
-            rotation (float): Rotation angle in degrees for the bullet's trajectory.
-            damage_mult (float): Multiplier for the bullet's base damage.
-        """
+    def __init__(self, position, rotation, speed, damage, offset_distance):
         super().__init__()
-
-        self.damage = 1 * (damage_mult/2)
         self.rotation = float(rotation)
-        self.image = pygame.image.load("assets/bul.png").convert_alpha()
         self.position = Vector2(position)
-        self.speed = 500
-        
-        self.image = pygame.transform.rotate(self.image, self.rotation-90)
-        self.image = pygame.transform.scale(self.image, (20, 20))
-        self.velocity = Vector2(0, -1).rotate(-self.rotation+90) * self.speed
-
-        self.rect = self.image.get_rect(center=position)
-        self.offset_distance = 20
+        self.speed = speed
+        self.damage = damage
+        self.offset_distance = offset_distance
+        self.velocity = Vector2(0, -1).rotate(-self.rotation + 90) * self.speed
 
     def delete(self):
         """
@@ -45,122 +23,80 @@ class Bullet_default(pygame.sprite.Sprite):
     def update(self, dt):
         """
         Update the bullet's position and check if it's offscreen.
-        
-        Args:
-            dt (float): Delta time in seconds since the last frame.
+        Override this if needed.
         """
         direction = Vector2(-1, 0).rotate(-self.rotation)
         offset = direction * self.offset_distance
         shifted_position = self.position - offset
         self.position += self.velocity * dt
         self.rect.center = shifted_position
-        if self.rect.bottom < 0 or self.rect.top > pygame.display.get_surface().get_height():
+        screen_height = pygame.display.get_surface().get_height()
+        if self.rect.bottom < 0 or self.rect.top > screen_height:
             self.kill()
 
 
-class Laser(pygame.sprite.Sprite):
+class Bullet_default(BaseBullet):
     """
-    Laser class for a continuous beam weapon.
-    
-    A fast, beam-like projectile with constant low damage.
+    Default bullet class for the player's standard weapon.
     """
     def __init__(self, position, rotation, damage_mult):
-        """
-        Initialize a laser beam object.
-        
-        Args:
-            position (tuple): Initial position (x, y) of the laser.
-            rotation (float): Rotation angle in degrees for the laser's trajectory.
-            damage_mult (float): Multiplier for the laser's base damage.
-        """
-        super().__init__()
-        self.damage = 0.02 * damage_mult
+        image = pygame.image.load("assets/bul.png").convert_alpha()
+        image = pygame.transform.rotate(image, rotation - 90)
+        image = pygame.transform.scale(image, (20, 20))
+        damage = 1 * (damage_mult / 2)
+        speed = 500
+        offset_distance = 20
 
-        self.rotation = float(rotation)
+        super().__init__(position, rotation, speed, damage, offset_distance)
+        self.image = image
+        self.rect = self.image.get_rect(center=position)
+
+
+class Bullet_sniper(BaseBullet):
+    """
+    Sniper bullet class for high-damage, fast projectiles.
+    """
+    def __init__(self, position, rotation, damage_mult):
+        image = pygame.image.load("assets/bul.png").convert_alpha()
+        image = pygame.transform.rotate(image, rotation - 90)
+        image = pygame.transform.scale(image, (30, 30))
+        damage = 5 * (damage_mult / 2)
+        speed = 1200
+        offset_distance = 30
+
+        super().__init__(position, rotation, speed, damage, offset_distance)
+        self.image = image
+        self.rect = self.image.get_rect(center=position)
+
+
+class Laser(BaseBullet):
+    """
+    Laser class for a continuous beam weapon.
+    """
+    def __init__(self, position, rotation, damage_mult):
+        damage = 0.03 * damage_mult
+        speed = 5000
+        offset_distance = 520
+        super().__init__(position, rotation, speed, damage, offset_distance)
+
         self.lifetime = 100
         self.image = pygame.Surface((3, 1000), pygame.SRCALPHA)
         pygame.draw.rect(self.image, (0, 255, 255), self.image.get_rect())
-
         self.image = pygame.transform.rotate(self.image, self.rotation - 90)
-
-        self.rect = self.image.get_rect(center = position)
-        self.position = Vector2(position)
-        self.speed = 5000
-        self.offset_distance = 520
-
-
-        self.velocity = Vector2(0, -1).rotate(-self.rotation + 90) * self.speed
-    
-    def delete(self):
-        """
-        Handle laser deletion (placeholder method).
-        """
-        pass
-
-    def update(self, dt):
-        """
-        Update the laser's position.
-        
-        Args:
-            dt (float): Delta time in seconds since the last frame.
-        """
-        direction = Vector2(-1, 0).rotate(-self.rotation)
-        offset = direction * self.offset_distance
-        shifted_position = self.position - offset
-        self.position += self.velocity * dt
-        self.rect.center = shifted_position
-        #if self.rect.bottom < 0 or self.rect.top > pygame.display.get_surface().get_height():
-        #    self.kill()
-
-
-
-class Bullet_sniper(pygame.sprite.Sprite):
-    """
-    Sniper bullet class for high-damage, fast projectiles.
-    
-    A powerful bullet with high damage and speed but slower fire rate.
-    """
-    def __init__(self, position, rotation, damage_mult):
-        """
-        Initialize a sniper bullet object.
-        
-        Args:
-            position (tuple): Initial position (x, y) of the bullet.
-            rotation (float): Rotation angle in degrees for the bullet's trajectory.
-            damage_mult (float): Multiplier for the bullet's base damage.
-        """
-        super().__init__()
-
-        self.damage = 5 * (damage_mult / 2)
-        self.rotation = float(rotation)
-        self.image = pygame.image.load("assets/bul.png").convert_alpha()
-        self.position = Vector2(position)
-        self.speed = 1200
-
-        self.image = pygame.transform.rotate(self.image, self.rotation - 90)
-        self.image = pygame.transform.scale(self.image, (30, 30))
-        self.velocity = Vector2(0, -1).rotate(-self.rotation + 90) * self.speed
-
         self.rect = self.image.get_rect(center=position)
-        self.offset_distance = 30
 
     def delete(self):
         """
-        Remove the bullet from its sprite group.
+        Handle laser deletion (can be extended for visual effects).
         """
-        self.kill()
+        pass  # No deletion logic yet
 
     def update(self, dt):
         """
-        Update the bullet's position and check if it's offscreen.
-        
-        Args:
-            dt (float): Delta time in seconds since the last frame.
+        Override to exclude screen bounds check.
         """
         direction = Vector2(-1, 0).rotate(-self.rotation)
         offset = direction * self.offset_distance
         shifted_position = self.position - offset
         self.position += self.velocity * dt
         self.rect.center = shifted_position
-        if self.rect.bottom < 0 or self.rect.top > pygame.display.get_surface().get_height():
-            self.kill()
