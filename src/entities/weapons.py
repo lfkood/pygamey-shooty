@@ -1,3 +1,5 @@
+import random
+
 """
 Weapons module for Space Fighter game.
 
@@ -67,3 +69,17 @@ class Weapon_sniper(BaseWeapon):
         if current_time - self.last_shot > self.shoot_delay / fire_rate_mult:
             self.last_shot = current_time
             return Bullet_sniper(position, rotation, damage_mult)
+
+
+class Weapon_shotgun(BaseWeapon):
+    """
+    Sniper weapon class with high damage but slow fire rate.
+    """
+    def __init__(self) -> None:
+        super().__init__(shoot_delay=800)
+
+    def shoot(self, position, rotation, fire_rate_mult, damage_mult):
+        current_time = pygame.time.get_ticks()
+        if current_time - self.last_shot > self.shoot_delay / fire_rate_mult:
+            self.last_shot = current_time
+            return [Bullet_shotgun(position + Vector2((random.random()-0.5)*7, 0), rotation + (random.random()-0.5)*7, damage_mult) for _ in range(7)]
