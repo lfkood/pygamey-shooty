@@ -69,7 +69,7 @@ UPGRADES = {
     "health": {"cost": 200, "levels": 2, "effect": 1},
     "damage": {"cost": 150, "levels": 4, "effect": 1},
     
-    "weapon_default": {"levels": 1,},
-    "weapon_laser": {"levels": 1,},
-    "weapon_sniper": {"levels": 1,}
+    "shotgun": {"levels": 1,},
+    "sniper": {"levels": 1,},
+    "laser": {"levels": 1,}
 }

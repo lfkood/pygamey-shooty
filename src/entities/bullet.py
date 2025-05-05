@@ -109,7 +109,7 @@ class Bullet_shotgun(BaseBullet):
         image = pygame.image.load("assets/bul.png").convert_alpha()
         image = pygame.transform.rotate(image, rotation - 90)
         image = pygame.transform.scale(image, (20, 20))
-        damage = 0.3 * (damage_mult / 2)
+        damage = 0.2 * (damage_mult / 2)
         speed = 1000
         offset_distance = 20
         lifetime = 300

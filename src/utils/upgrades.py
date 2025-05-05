@@ -2,6 +2,7 @@ import pygame
 import random
 import settings
 from pygame.math import Vector2
+import src.entities.weapons as weapons
 
 upgrade_cache = []
 
@@ -25,7 +26,13 @@ def apply_upgrade(player, upgrade_type):
     elif upgrade_type == "health":
         player.lives += 1
     elif upgrade_type == "damage":
-        pass        
+        pass
+    elif upgrade_type == "sniper":
+        player.weapon = weapons.Weapon_sniper()
+    elif upgrade_type == "laser":
+        player.weapon = weapons.Weapon_laser()
+    elif upgrade_type == "shotgun":
+        player.weapon = weapons.Weapon_shotgun()
     return True
 
 def draw_upgrade_menu(screen, player):
@@ -43,14 +50,24 @@ def draw_upgrade_menu(screen, player):
     small_font = pygame.font.Font(None, 24)
     
     all_upgrade_types = ["fire_rate", "speed", "health", "damage"]
+    weapon_upgrades = ["sniper", "shotgun", "laser"]
+    #new_weapon = bool(round(random.random()/2))
+    new_weapon = 1
     if not upgrade_cache:
-        upgrade_cache = random.sample(all_upgrade_types, 3)
+        if new_weapon:
+            upgrade_cache = random.sample(all_upgrade_types, 2) + random.sample(weapon_upgrades, 1) 
+        else:
+            upgrade_cache = random.sample(all_upgrade_types, 3)
+    
 
     icons = {
         "fire_rate": pygame.image.load("assets/upgrade-rate.png"),
         "speed": pygame.image.load("assets/upgrade-speed.png"),
         "health": pygame.image.load("assets/upgrade-health.png"),
         "damage": pygame.image.load("assets/upgrade-dmg.png"),
+        "sniper": pygame.image.load("assets/weapon_sniper.png"),
+        "shotgun": pygame.image.load("assets/weapon_shotgun.png"),
+        "laser": pygame.image.load("assets/weapon_laser.png"),
     }
 
     descriptions = {
@@ -58,6 +75,9 @@ def draw_upgrade_menu(screen, player):
         "speed": "+50% speed",
         "health": "+1 life",
         "damage": "+50% bullet damage",
+        "sniper": "sniper weapon",
+        "laser": "laser weapon",
+        "shotgun": "shotgun weapon",
     }
 
     box_size = 100

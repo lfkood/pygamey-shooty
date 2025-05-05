@@ -62,7 +62,7 @@ class Weapon_sniper(BaseWeapon):
     Sniper weapon class with high damage but slow fire rate.
     """
     def __init__(self) -> None:
-        super().__init__(shoot_delay=1500)
+        super().__init__(shoot_delay=1700)
 
     def shoot(self, position, rotation, fire_rate_mult, damage_mult):
         current_time = pygame.time.get_ticks()
@@ -76,7 +76,7 @@ class Weapon_shotgun(BaseWeapon):
     Sniper weapon class with high damage but slow fire rate.
     """
     def __init__(self) -> None:
-        super().__init__(shoot_delay=900)
+        super().__init__(shoot_delay=1000)
 
     def shoot(self, position, rotation, fire_rate_mult, damage_mult):
         current_time = pygame.time.get_ticks()
