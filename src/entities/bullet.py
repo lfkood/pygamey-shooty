@@ -5,7 +5,7 @@ class BaseBullet(pygame.sprite.Sprite):
     """
     Abstract base class for all bullet types.
     """
-    def __init__(self, position, rotation, speed, damage, offset_distance, lifetime = 1000):
+    def __init__(self, position, rotation, speed, damage, offset_distance, lifetime = 1000, pierce = 0):
         super().__init__()
         self.rotation = float(rotation)
         self.position = Vector2(position)
@@ -16,13 +16,10 @@ class BaseBullet(pygame.sprite.Sprite):
 
         self.start_time = pygame.time.get_ticks()
         self.lifetime = lifetime
+        self.pierce = pierce
+        self.enemies_left_to_pierce = pierce + 1
 
 
-    def delete(self):
-        """
-        Remove the bullet from its sprite group.
-        """
-        self.kill()
 
     def update(self, dt):
         """
@@ -36,6 +33,8 @@ class BaseBullet(pygame.sprite.Sprite):
         self.rect.center = shifted_position
         screen_height = pygame.display.get_surface().get_height()
         if self.rect.bottom < 0 or self.rect.top > screen_height or pygame.time.get_ticks() - self.start_time >= self.lifetime:
+            self.kill()
+        if self.enemies_left_to_pierce == 0:
             self.kill()
 
 
@@ -67,8 +66,9 @@ class Bullet_sniper(BaseBullet):
         damage = 5 * (damage_mult / 2)
         speed = 1200
         offset_distance = 30
+        pierce = 2
 
-        super().__init__(position, rotation, speed, damage, offset_distance)
+        super().__init__(position, rotation, speed, damage, offset_distance, pierce = pierce)
         self.image = image
         self.rect = self.image.get_rect(center=position)
 
@@ -82,19 +82,14 @@ class Laser(BaseBullet):
         speed = 5000
         offset_distance = 520
         lifetime = 100
-        super().__init__(position, rotation, speed, damage, offset_distance, lifetime)
+        pierce = 1000
+        super().__init__(position, rotation, speed, damage, offset_distance, lifetime, pierce)
 
         self.image = pygame.Surface((3, 1000), pygame.SRCALPHA)
         pygame.draw.rect(self.image, (0, 255, 255), self.image.get_rect())
         self.image = pygame.transform.rotate(self.image, self.rotation - 90)
         self.rect = self.image.get_rect(center=position)
 
-
-    def delete(self):
-        """
-        Handle laser deletion (can be extended for visual effects).
-        """
-        pass
 
     def update(self, dt):
         """
@@ -114,11 +109,13 @@ class Bullet_shotgun(BaseBullet):
         image = pygame.image.load("assets/bul.png").convert_alpha()
         image = pygame.transform.rotate(image, rotation - 90)
         image = pygame.transform.scale(image, (20, 20))
-        damage = 0.4 * (damage_mult / 2)
+        damage = 0.3 * (damage_mult / 2)
         speed = 1000
         offset_distance = 20
         lifetime = 300
+        pierce = 1
 
-        super().__init__(position, rotation, speed, damage, offset_distance, lifetime)
+
+        super().__init__(position, rotation, speed, damage, offset_distance, lifetime, pierce)
         self.image = image
         self.rect = self.image.get_rect(center=position)
