@@ -1,3 +1,9 @@
+"""
+Settings module for Space Fighter game.
+
+This module contains all global settings and constants used throughout the game,
+including screen dimensions, colors, game states, difficulty settings, and upgrade parameters.
+"""
 import platform
 import ctypes
 
@@ -12,6 +18,10 @@ FPS = 60
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
+GREEN = (0, 255, 0)
+YELLOW = (255, 255, 0)
+HEALTH_BAR_RED = (220, 60, 60)
+HEALTH_BAR_GREEN = (60, 220, 60)
 
 # Game settings
 PLAYER_SPEED = 300
@@ -34,7 +44,7 @@ DIFFICULTY_SETTINGS = {
     EASY: {
         "spawn_delay": 1500,
         "enemy_speed": 150,
-        "enemy_health": 1,
+        "enemy_health": 0.5,
         "score_multiplier": 2  # Increased from 1
     },
     NORMAL: {
@@ -57,5 +67,9 @@ UPGRADES = {
     "fire_rate": {"cost": 100, "levels": 4, "effect": 1},
     "speed": {"cost": 150, "levels": 3, "effect": 50}, 
     "health": {"cost": 200, "levels": 2, "effect": 1},
-    "damage": {"cost": 150, "levels": 4, "effect": 1}
+    "damage": {"cost": 150, "levels": 4, "effect": 1},
+    
+    "weapon_default": {"levels": 1,},
+    "weapon_laser": {"levels": 1,},
+    "weapon_sniper": {"levels": 1,}
 }

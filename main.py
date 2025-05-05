@@ -1,13 +1,32 @@
+"""
+Main game module for Space Fighter game.
+
+This module contains the main Game class which controls the game loop,
+handles events, updates game state, and renders all game elements.
+"""
 import pygame
 from pygame.math import Vector2
 import sys
 from src.entities.player import Player
 import src.entities.bullet
-from src.entities.enemy import Enemy
+import src.entities.enemy
 import settings
+import src.utils.upgrades as upgrades
+
 
 class Game:
+    """
+    Main game class that controls the game loop and all game elements.
+    
+    This class initializes the game, handles user input, updates game state,
+    and renders all game elements to the screen.
+    """
     def __init__(self):
+        """
+        Initialize the game with default settings.
+        
+        Sets up pygame, loads assets, and initializes game state variables.
+        """
         pygame.init()
         pygame.mixer.init()
         self.screen = pygame.display.set_mode(settings.SCREEN_SIZE)
@@ -35,16 +54,31 @@ class Game:
         self.init_game()
 
     def init_game(self):
+        """
+        Initialize or reset the game state for a new game.
+        
+        Creates player and enemy groups, resets timers, score, and other game variables.
+        """
         self.player = Player((settings.SCREEN_SIZE[0] // 2, settings.SCREEN_SIZE[1] - 50), 0)
         self.enemies = pygame.sprite.Group()
         self.spawn_timer = 0
+        self.spawn_timer_2 = 0
+
         self.spawn_delay = 1000
+        self.spawn_delay_2 = 3000
+
         self.score = 0
         self.auto_shoot_timer = 0
-        self.player.upgrade_points = 100
+        self.player.upgrade_points = 0
+        self.has_upgrade_available = False
 
 
     def handle_events(self):
+        """
+        Process all game events and user input.
+        
+        Handles mouse clicks, keyboard input, and pygame events based on current game state.
+        """
         event_queue = pygame.event.get()
         for event in event_queue:
             if event.type == pygame.QUIT:
@@ -75,18 +109,12 @@ class Game:
                     if event.key == pygame.K_SPACE:
                         self.state = settings.PLAYING
 
+
                 elif self.state == settings.PLAYING:
                     if event.key == pygame.K_u:
                         self.upgrade_menu_active = not self.upgrade_menu_active
-                    if self.upgrade_menu_active:
-                        if event.key == pygame.K_1:
-                            self.player.apply_upgrade("fire_rate")
-                        elif event.key == pygame.K_2:
-                            self.player.apply_upgrade("speed")
-                        elif event.key == pygame.K_3:
-                            self.player.apply_upgrade("health")
-                        elif event.key == pygame.K_4:
-                            self.player.apply_upgrade("damage")
+
+
 
                 elif self.state == settings.GAME_OVER:
                     if event.key == pygame.K_SPACE:
@@ -94,6 +122,15 @@ class Game:
                         self.state = settings.PLAYING
 
     def update(self, dt):
+        """
+        Update game state for the current frame.
+        
+        Args:
+            dt (float): Delta time in seconds since the last frame.
+        
+        Updates player, enemies, bullets, checks for collisions, handles level progression,
+        and updates game state.
+        """
         if self.state != settings.PLAYING or self.upgrade_menu_active:
             return
 
@@ -102,9 +139,10 @@ class Game:
         # Check for level up
         if self.score >= settings.LEVEL_UP_SCORE * self.level:
             self.level += 1
-            self.spawn_delay = max(200, self.spawn_delay - 100)  # Increase difficulty
-            self.player.upgrade_points += 100  # Award upgrade points on level up
-            # Auto show upgrade menu on level up
+            self.spawn_delay = max(200, self.spawn_delay - 100)
+            self.spawn_delay_2 = max(200, self.spawn_delay_2 - 100)
+            
+            self.has_upgrade_available = True
             self.upgrade_menu_active = True
 
         if pygame.mouse.get_pressed()[0]:
@@ -113,12 +151,18 @@ class Game:
 
         # Enemy spawning with difficulty settings
         if current_time - self.spawn_timer >= self.spawn_delay:
-            self.enemies.add(Enemy(settings.SCREEN_SIZE[0], self.player, self.difficulty, self.level/2))
+            self.enemies.add(src.entities.enemy.Enemy_1(settings.SCREEN_SIZE[0], self.player, self.difficulty, self.level/2))
             self.spawn_timer = current_time
+        if current_time - self.spawn_timer_2 >= self.spawn_delay_2 and self.level > 3:
+            self.enemies.add(src.entities.enemy.Enemy_2(settings.SCREEN_SIZE[0], self.player, self.difficulty, self.level/2))
+            self.spawn_timer_2 = current_time
 
         self.player.handle_movement(dt)
         self.enemies.update(dt)
         self.player.bullets.update(dt)
+        
+        # Update damage indicators
+        src.entities.enemy.Enemy_1.damage_indicators.update(dt)
 
         # Check bullet-enemy collisions with health system
         for bullet in self.player.bullets:
@@ -133,6 +177,11 @@ class Game:
         self.check_player_collision()
 
     def check_player_collision(self):
+        """
+        Check for collisions between the player and enemies.
+        
+        Reduces player lives on collision and updates game state if player runs out of lives.
+        """
         current_time = pygame.time.get_ticks()
         for enemy in self.enemies:
             distance = self.player.position.distance_to(enemy.position)
@@ -144,6 +193,11 @@ class Game:
 
 
     def draw_menu(self):
+        """
+        Draw the main menu screen.
+        
+        Displays title and start button with hover effects.
+        """
         title = pygame.image.load("assets/title.png").convert_alpha()
         title = pygame.transform.scale(title, Vector2(64,12)*8)
         title_rect = title.get_rect(center=(settings.SCREEN_SIZE[0]//2, settings.SCREEN_SIZE[1]//3))
@@ -163,6 +217,11 @@ class Game:
             self.screen.blit(start_btn, start_btn_rect)
     
     def draw_diff_sel(self):
+        """
+        Draw the difficulty selection screen.
+        
+        Displays difficulty options (Easy, Medium, Hard) with hover effects.
+        """
         title = pygame.image.load("assets/diff-title.png").convert_alpha()
         title = pygame.transform.scale(title, Vector2(34,12)*8)
         title_rect = title.get_rect(center=(settings.SCREEN_SIZE[0]//2, settings.SCREEN_SIZE[1]//6))
@@ -197,6 +256,11 @@ class Game:
                 self.screen.blit(difficulty_btns[i], x)
 
     def draw_game_over(self):
+        """
+        Draw the game over screen.
+        
+        Displays final score and restart instructions.
+        """
         game_over = self.big_font.render("GAME OVER", True, settings.WHITE)
         score_text = self.big_font.render(f"Score: {self.score}", True, settings.WHITE)
         restart_text = self.font.render("Press SPACE to Restart", True, settings.WHITE)
@@ -209,42 +273,12 @@ class Game:
         self.screen.blit(score_text, score_rect)
         self.screen.blit(restart_text, restart_rect)
 
-    def draw_upgrade_menu(self):
-        # Draw semi-transparent overlay
-        overlay = pygame.Surface(settings.SCREEN_SIZE, pygame.SRCALPHA)
-        overlay.fill((0, 0, 0, 180))
-        self.screen.blit(overlay, (0, 0))
-
-        # Draw upgrade options
-        title = self.big_font.render("UPGRADES", True, settings.WHITE)
-        points_text = self.font.render(f"Upgrade Points: {self.player.upgrade_points}", True, settings.WHITE)
-
-        upgrade_options = [
-            f"1. Fire Rate (Level {self.player.upgrades['fire_rate']-1}/{settings.UPGRADES['fire_rate']['levels']-1}) - {settings.UPGRADES['fire_rate']['cost']} pts",
-            f"2. Speed (Level {self.player.upgrades['speed']}/{settings.UPGRADES['speed']['levels']}) - {settings.UPGRADES['speed']['cost']} pts",
-            f"3. Health (Level {self.player.upgrades['health']}/{settings.UPGRADES['health']['levels']}) - {settings.UPGRADES['health']['cost']} pts",
-            f"4. Damage (Level {self.player.upgrades['damage']-1}/{settings.UPGRADES['damage']['levels']-1}) - {settings.UPGRADES['health']['cost']} pts"
-        ]
-
-        close_text = self.font.render("Press U to close", True, settings.WHITE)
-
-        title_rect = title.get_rect(center=(settings.SCREEN_SIZE[0] // 2, 100))
-        points_rect = points_text.get_rect(center=(settings.SCREEN_SIZE[0] // 2, 160))
-
-        self.screen.blit(title, title_rect)
-        self.screen.blit(points_text, points_rect)
-
-        y_pos = 220
-        for option in upgrade_options:
-            option_text = self.font.render(option, True, settings.WHITE)
-            option_rect = option_text.get_rect(center=(settings.SCREEN_SIZE[0] // 2, y_pos))
-            self.screen.blit(option_text, option_rect)
-            y_pos += 50
-
-        close_rect = close_text.get_rect(center=(settings.SCREEN_SIZE[0] // 2, y_pos + 30))
-        self.screen.blit(close_text, close_rect)
-
     def draw_level_progress_bar(self):
+        """
+        Draw a progress bar showing progress toward the next level.
+        
+        Visualizes current score progress as a percentage toward leveling up.
+        """
         # Calculate progress percentage
         next_level_threshold = self.level * settings.LEVEL_UP_SCORE
         previous_level_threshold = (self.level - 1) * settings.LEVEL_UP_SCORE
@@ -276,6 +310,11 @@ class Game:
         self.screen.blit(progress_text, text_rect)
 
     def draw(self):
+        """
+        Render all game elements to the screen based on current game state.
+        
+        Handles rendering for different game states (menu, playing, game over).
+        """
         # Draw background
         self.screen.blit(self.background, (0, 0))
 
@@ -288,6 +327,13 @@ class Game:
             self.player.update(pygame.time.get_ticks(), self.screen, self.player_model)
             self.player.bullets.draw(self.screen)
             self.enemies.draw(self.screen)
+            
+            # Draw health bars for all enemies
+            for enemy in self.enemies:
+                enemy.draw_health_bar(self.screen)
+            
+            # Draw damage indicators
+            src.entities.enemy.Enemy_1.damage_indicators.draw(self.screen)
 
             # Draw lives, score, level
             lives_text = self.font.render(f'Lives: {self.player.lives}', True, settings.WHITE)
@@ -304,13 +350,19 @@ class Game:
 
             # Draw upgrade menu if active
             if self.upgrade_menu_active:
-                self.draw_upgrade_menu()
+                if upgrades.draw_upgrade_menu(self.screen, self.player):
+                    self.upgrade_menu_active = False
         elif self.state == settings.GAME_OVER:
             self.draw_game_over()
 
         pygame.display.flip()
 
     def run(self):
+        """
+        Start the main game loop.
+        
+        Controls the game timing, updates, rendering, and handles exit conditions.
+        """
         while self.running:
             dt = self.clock.tick(settings.FPS) / 1000
             self.handle_events()
